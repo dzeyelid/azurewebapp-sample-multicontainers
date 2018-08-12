@@ -1,0 +1,38 @@
+version: "3.4"
+services:
+  wordpress:
+    build:
+      context: ./services/wordpress
+    container_name: sample-wordpress
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - db
+    ports:
+      - 80:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${DB_NAME}
+  db:
+    build:
+      context: ./services/db
+    container_name: sample-db
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - backend
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  db-data:
+    name: azurewebapp-sample-multicontainers-db-data
+    external: true
