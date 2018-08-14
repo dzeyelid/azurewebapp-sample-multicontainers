@@ -1,7 +1,9 @@
 version: "3.4"
 services:
   wordpress:
-    image: custom-wordpress
+    build:
+      context: ./services/wordpress
+    image: custom-wordpress:local
     container_name: custom-wordpress
     networks:
       - frontend
@@ -16,7 +18,9 @@ services:
       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
       WORDPRESS_DB_NAME: ${DB_NAME}
   mysql:
-    image: custom-mysql
+    build:
+      context: ./services/mysql
+    image: custom-mysql:local
     container_name: custom-mysql
     volumes:
       - db-data:/var/lib/mysql
