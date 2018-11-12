@@ -1,36 +1,26 @@
 version: "3.4"
 services:
   wordpress:
-    image: custom-wordpress
+    image: ${REGISTRY}/custom-wordpress:0.1
     container_name: custom-wordpress
-    networks:
-      - frontend
-      - backend
     depends_on:
       - mysql
     ports:
       - 80:80
+    restart: always
     environment:
       WORDPRESS_DB_HOST: mysql
       WORDPRESS_DB_USER: root
       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
       WORDPRESS_DB_NAME: ${DB_NAME}
   mysql:
-    image: custom-mysql
+    image: ${REGISTRY}/custom-mysql:0.1
     container_name: custom-mysql
     volumes:
       - db-data:/var/lib/mysql
-    networks:
-      - backend
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
 
-networks:
-  frontend:
-  backend:
-
 volumes:
   db-data:
-    name: azurewebapp-sample-multicontainers-db-data
-    external: true
