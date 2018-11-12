@@ -174,22 +174,22 @@ az group create --name ${RESOURCE_GROUP} --location ${LOCATION}
 # Create an Azure Container Registry
 ACR_NAME=<name of container registry>
 ACR_SKU=<SKU of the container registry, ex) Basic>
-az acr create --name ${ACR_NAME} --resource-group ${RESOURCE_GROUP} --sku ${ACR_SKU} --admin-enabled true
+az acr create --resource-group ${RESOURCE_GROUP} --name ${ACR_NAME} --sku ${ACR_SKU} --admin-enabled true
 
 # Set registry
 echo "export REGISTRY=${ACR_NAME}.azurecr.io" >> .env
 source .env
 
 # Tag images
-docker tag custom-wordpress:local ${REGISTRY}/custom-wordpress
-docker tag custom-mysql:local ${REGISTRY}/custom-mysql
+docker tag custom-wordpress:local ${REGISTRY}/custom-wordpress:0.1
+docker tag custom-mysql:local ${REGISTRY}/custom-mysql:0.1
 
 # Login to the registry
 az acr login --name ${ACR_NAME}
 
 # Push images to the registry
-docker push ${REGISTRY}/custom-wordpress
-docker push ${REGISTRY}/custom-mysql
+docker push ${REGISTRY}/custom-wordpress:0.1
+docker push ${REGISTRY}/custom-mysql:0.1
 ```
 
 Deploy these containers to Azure Web App
@@ -203,7 +203,7 @@ cat docker-compose.yml | envsubst > docker-compose.webapp.yml
 # Create App Service plan for Azure Web App
 APPSERVICE_NAME=<name of App Service plan>
 APPSERVICE_SKU=<SKU of App Service plan, ex) B1>
-az appservice plan create --name ${APPSERVICE_NAME} --resource-group ${RESOURCE_GROUP} --sku ${APPSERVICE_SKU} --is-linux
+az appservice plan create --resource-group ${RESOURCE_GROUP} --name ${APPSERVICE_NAME} --sku ${APPSERVICE_SKU} --is-linux
 
 # Create Azure Web App with docker-compose configuration
 WEBAPP_NAME=<name of Azure Web App>
@@ -216,13 +216,13 @@ ACR_USERNAME=$(echo ${ACR_CREDENTIALS} | jq -r '.username')
 ACR_PASSWORD=$(echo ${ACR_CREDENTIALS} | jq -r '.passwords[0].value')
 
 # Set the credential to the Web App
-az webapp config container set --name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP} --docker-registry-server-url https://${REGISTRY} --docker-registry-server-user ${ACR_USERNAME} --docker-registry-server-password ${ACR_PASSWORD}
+az webapp config container set --resource-group ${RESOURCE_GROUP} --name ${WEBAPP_NAME} --docker-registry-server-url https://${REGISTRY} --docker-registry-server-user ${ACR_USERNAME} --docker-registry-server-password ${ACR_PASSWORD}
 
-# Restart the Web App
-az webapp restart --name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP}
+# Open the web application of the Web App
+az webapp browse --resource-group ${RESOURCE_GROUP} --name ${WEBAPP_NAME}
 
-# Show the hostname of the Web App
-az webapp config hostname list --webapp-name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP} --query [0].name --output tsv
+# If you update your config, run the command below.
+az webapp config container set --resource-group ${RESOURCE_GROUP} --name ${WEBAPP_NAME} --multicontainer-config-type compose --multicontainer-config-file docker-compose.webapp.yml
 ```
 
 Notes

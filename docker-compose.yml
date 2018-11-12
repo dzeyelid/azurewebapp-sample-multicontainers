@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   wordpress:
-    image: ${REGISTRY}/custom-wordpress
+    image: ${REGISTRY}/custom-wordpress:0.1
     container_name: custom-wordpress
     depends_on:
       - mysql
@@ -14,7 +14,7 @@ services:
       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
       WORDPRESS_DB_NAME: ${DB_NAME}
   mysql:
-    image: ${REGISTRY}/custom-mysql
+    image: ${REGISTRY}/custom-mysql:0.1
     container_name: custom-mysql
     volumes:
       - db-data:/var/lib/mysql

@@ -12,6 +12,7 @@ services:
       - mysql
     ports:
       - 80:80
+    restart: always
     environment:
       WORDPRESS_DB_HOST: mysql
       WORDPRESS_DB_USER: root
