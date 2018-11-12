@@ -1,6 +1,6 @@
 [WIP]
 
-A sample to restore old WordPress with multi-container on Azure Web App
+A sample to restore old WordPress with multi-containers on Azure Web App
 ====
 
 Incidentally, if you added some changes to restored WordPress, the changes affect only in the container instances not be saved. So please recreate your container images, or save them in another way.
@@ -211,16 +211,15 @@ az webapp create --resource-group ${RESOURCE_GROUP} --plan ${APPSERVICE_NAME} --
 
 # If `jq` is installed, you can parse the credentials of Azure Container Registry like below
 # Or set the `ACR_USERNAME` with `username` and `ACR_PASSWORD` with `passwords[0].value` manually.
-ACR_CREADENTIALS=$(az acr credential show --name ${ACR_NAME})
+ACR_CREDENTIALS=$(az acr credential show --name ${ACR_NAME})
 ACR_USERNAME=$(echo ${ACR_CREDENTIALS} | jq -r '.username')
 ACR_PASSWORD=$(echo ${ACR_CREDENTIALS} | jq -r '.passwords[0].value')
 
-az webapp config container set --name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP} --docker-custom-image-name ${REGISTRY}/custom-wordpress --docker-registry-server-url https://${REGISTRY} --docker-registry-server-user ${ACR_USERNAME} --docker-registry-server-password ${ACR_PASSWORD}
-az webapp config container set --name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP} --docker-custom-image-name ${REGISTRY}/custom-mysql --docker-registry-server-url https://${REGISTRY} --docker-registry-server-user ${ACR_USERNAME} --docker-registry-server-password ${ACR_PASSWORD}
+# Set the credential to the Web App
+az webapp config container set --name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP} --docker-registry-server-url https://${REGISTRY} --docker-registry-server-user ${ACR_USERNAME} --docker-registry-server-password ${ACR_PASSWORD}
 
-az webapp config container set --name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP} --multicontainer-config-type compose --multicontainer-config-file docker-compose.webapp.yml
-# az webapp config container set --name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP} --multicontainer-config-file docker-compose.webapp.yml
-# az webapp restart --name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP}
+# Restart the Web App
+az webapp restart --name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP}
 
 # Show the hostname of the Web App
 az webapp config hostname list --webapp-name ${WEBAPP_NAME} --resource-group ${RESOURCE_GROUP} --query [0].name --output tsv
