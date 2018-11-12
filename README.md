@@ -1,9 +1,9 @@
-[WIP]
-
-A sample to restore old WordPress with multi-containers on Azure Web App
+A sample to restore old WordPress as multi-containers on Azure Web App
 ====
 
-Incidentally, if you added some changes to restored WordPress, the changes affect only in the container instances not be saved. So please recreate your container images, or save them in another way.
+This repository is a sample to restore old WordPress as multi-containers and show how to deploy to Azure Web App for Containers.
+
+Incidentally, if you added some changes to the restored WordPress, the changes affect only in the container instances not be saved. So please recreate your container images, or save them in another way.
 
 References
 ----
@@ -87,13 +87,22 @@ cp <your dump file> ./services/mysql/dump.sql
 docker-compose -f docker-compose.local.yml build mysql
 ```
 
+### Dump and rebuild mysql container image
+
 If you want to setup the database with updated data, dump the updated data, put that and build again. 
 
 ```bash
+# Dump the updated database
 source .env
 docker exec -it custom-mysql mysqldump -hlocalhost --databases ${DB_NAME} -p${DB_PASSWORD} > dump_updated.sql
+
+# Attention: If the dump file includes warning message on top of it, remove them.
+
+# Replace the dump file
 mv services/mysql/dump.sql services/mysql/dump.sql.backup
 mv dump_updated.sql services/mysql/dump.sql
+
+# Rebuild the mysql container image
 docker-compose -f docker-compose.local.yml build mysql
 ```
 
@@ -107,6 +116,8 @@ docker-compose.exe -f docker-compose.local.yml up -d
 
 Open `http://localhost/wp-admin`. Then if the page is _white_ or something is wrong, some errors occurred. check your `siteurl` and `home` in `wp-options` table.
 
+
+### Fix `home` and `siteurl` in `wp-options` directly
 
 ```bash
 # Access to the database and change the siteurl and home url
@@ -140,6 +151,8 @@ mysql> select * from wp_options where option_name = 'siteurl' or option_name = '
 2 rows in set (0.00 sec)
 ```
 
+### Upgrade your database to suit the newer WordPress
+
 Then open `http://localhost/wp-admin`, you would see the page below if you need to update the database structure.
 
 > Database Update Required
@@ -152,9 +165,24 @@ Press the _Update WordPress Database_ and _Continue_ buttons.
 ![](./docs/images/screen_database-update-required.png)
 ![](./docs/images/screen_database-update-complete.png)
 
-Let's log in to your WordPress. After activating the necessary plugins, check the your site `http://localhost`. Can you see correct your site? Congrats!
+Let's log in to your WordPress. After activating the necessary plugins, check the your site `http://localhost`. Can you see your correct site? Congrats!
 
 ![](./docs/images/screen_wordpress-login.png)
+
+
+Update `home` and `siteurl` in `wp-options` to suit Web App endpint
+----
+
+Web App's endpoint can be like below. So decide your web app name and update `home` and `siteurl` with the endpoint.
+
+```
+https://<your webapp name>.azurewebsites.net
+```
+
+### How to update them
+
+1. Update `home` and `siteurl` by refering [this section](#fix-home-and-siteurl-in-wp-options-directly)
+2. Dump and rebuild the mysql container image by refering [this section](#dump-and-rebuild-mysql-container-image)
 
 
 Push built container images to Azure Container Registry
